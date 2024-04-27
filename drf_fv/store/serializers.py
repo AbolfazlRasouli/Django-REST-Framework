@@ -1,6 +1,6 @@
 from decimal import Decimal
 from rest_framework import serializers
-
+from django.utils.text import slugify
 from .models import Category, Product
 
 DOLORS_TO_RIALS = 500000
@@ -83,7 +83,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     # def create(self, validated_data):
     #     product = Product(**validated_data)
-    #     product.slug=slugify(product.name)
+    #     product.slug = slugify(product.name)
     #     product.save()
     #     return product
 
