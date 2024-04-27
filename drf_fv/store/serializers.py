@@ -75,3 +75,20 @@ class ProductSerializer(serializers.ModelSerializer):
     # def calculate_tax(self, product):
     #     return round(product.price * Decimal(1.09), 2)
 
+    def validate(self, data):
+        print(data)
+        if len(data['name']) < 6:
+            raise serializers.ValidationError('product title length should be ..')
+        return data
+
+    # def create(self, validated_data):
+    #     product = Product(**validated_data)
+    #     product.slug=slugify(product.name)
+    #     product.save()
+    #     return product
+
+    # def update(self, instance, validated_data):
+    #     # instance.inventory = 0
+    #     instance.inventory = validated_data.get('inventory')
+    #     instance.save()
+    #     return instance
