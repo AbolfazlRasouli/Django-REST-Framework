@@ -165,22 +165,22 @@ from rest_framework.permissions import IsAuthenticated
 
 
 # ======================================/____ 3 ____/=====================================================
-class ProductViewSet(ModelViewSet):
-    serializer_class = ProductSerializer
-    queryset = Product.objects.select_related('category').all()
-
-    def get_serializer_context(self):
-        return {'request': self.request}
-
-    def destroy(self, request, pk):
-        product = get_object_or_404(Product.objects.select_related('category'), pk=pk)
-        if product.order_items.count() > 0:
-            return Response({
-                'error': 'There is some orderitem including this product . please remove them first.'},
-                status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-        product.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+# class ProductViewSet(ModelViewSet):
+#     serializer_class = ProductSerializer
+#     queryset = Product.objects.select_related('category').all()
+#
+#     def get_serializer_context(self):
+#         return {'request': self.request}
+#
+#     def destroy(self, request, pk):
+#         product = get_object_or_404(Product.objects.select_related('category'), pk=pk)
+#         if product.order_items.count() > 0:
+#             return Response({
+#                 'error': 'There is some orderitem including this product . please remove them first.'},
+#                 status=status.HTTP_405_METHOD_NOT_ALLOWED)
+#
+#         product.delete()
+#         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class CategoryViewSet(ModelViewSet):
@@ -210,4 +210,59 @@ class CommentViewSet(ModelViewSet):
 
     def get_serializer_context(self):
         return {'product_pk': self.kwargs['product_pk']}
+
+
+# ======================================/____ 4 ____/=====================================================
+
+class ProductViewSet(ModelViewSet):
+    serializer_class = ProductSerializer
+    # queryset = Product.objects.select_related('category').all()
+
+    def get_queryset(self):
+        queryset = Product.objects.all()
+        category_id_parameter = self.request.query_params.get('category_id')
+        if category_id_parameter is not None:
+            queryset = queryset.filter(category_id=category_id_parameter)
+        return queryset
+
+    def get_serializer_context(self):
+        return {'request': self.request}
+
+    def destroy(self, request, pk):
+        product = get_object_or_404(Product.objects.select_related('category'), pk=pk)
+        if product.order_items.count() > 0:
+            return Response({
+                'error': 'There is some orderitem including this product . please remove them first.'},
+                status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        product.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+# ======================================/____ 5 ____/=====================================================
+
+# class ProductViewSet(ModelViewSet):
+#     serializer_class = ProductSerializer
+#     queryset = Product.objects.all()
+#     filter_backends = [DjangoFilterBackend]
+#     filterset_fields = ['category_id', 'inventory']
+#
+#     # def get_queryset(self):
+#     #     queryset = Product.objects.all()
+#     #     category_id_parameter = self.request.query_params.get('category_id')
+#     #     if category_id_parameter is not None:
+#     #         queryset = queryset.filter(category_id=category_id_parameter)
+#     #     return queryset
+#
+#     def get_serializer_context(self):
+#         return {'request': self.request}
+#
+#     def destroy(self, request, pk):
+#         product = get_object_or_404(Product.objects.select_related('category'), pk=pk)
+#         if product.order_items.count() > 0:
+#             return Response({
+#                 'error': 'There is some orderitem including this product . please remove them first.'},
+#                 status=status.HTTP_405_METHOD_NOT_ALLOWED)
+#
+#         product.delete()
+#         return Response(status=status.HTTP_204_NO_CONTENT)
 
