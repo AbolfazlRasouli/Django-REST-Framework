@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-# from .filters import ProductFilter
+from .filters import ProductFilter
 from .models import Product, Category, Comment
 # from .pagination import DefaultPagination
 from .serializers import ProductSerializer, CategorySerializer, CommentSerializer
@@ -240,11 +240,56 @@ class CommentViewSet(ModelViewSet):
 
 # ======================================/____ 5 ____/=====================================================
 
+# class ProductViewSet(ModelViewSet):
+#     serializer_class = ProductSerializer
+#     queryset = Product.objects.all()
+#     filter_backends = [DjangoFilterBackend]
+#     filterset_fields = ['category_id', 'inventory']
+#
+#     def get_serializer_context(self):
+#         return {'request': self.request}
+#
+#     def destroy(self, request, pk):
+#         product = get_object_or_404(Product.objects.select_related('category'), pk=pk)
+#         if product.order_items.count() > 0:
+#             return Response({
+#                 'error': 'There is some orderitem including this product . please remove them first.'},
+#                 status=status.HTTP_405_METHOD_NOT_ALLOWED)
+#
+#         product.delete()
+#         return Response(status=status.HTTP_204_NO_CONTENT)
+
+# ======================================/____ 6 ____/=====================================================
+
+# class ProductViewSet(ModelViewSet):
+#     serializer_class = ProductSerializer
+#     queryset = Product.objects.all()
+#     filter_backends = [DjangoFilterBackend]
+#     filterset_class = ProductFilter
+#
+#
+#     def get_serializer_context(self):
+#         return {'request': self.request}
+#
+#     def destroy(self, request, pk):
+#         product = get_object_or_404(Product.objects.select_related('category'), pk=pk)
+#         if product.order_items.count() > 0:
+#             return Response({
+#                 'error': 'There is some orderitem including this product . please remove them first.'},
+#                 status=status.HTTP_405_METHOD_NOT_ALLOWED)
+#
+#         product.delete()
+#         return Response(status=status.HTTP_204_NO_CONTENT)
+#
+
+# ======================================/____ 7 ____/=====================================================
+
 class ProductViewSet(ModelViewSet):
     serializer_class = ProductSerializer
     queryset = Product.objects.all()
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['category_id', 'inventory']
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_class = ProductFilter
+    ordering_fields = ['name', 'price', 'inventory']
 
     def get_serializer_context(self):
         return {'request': self.request}
@@ -259,3 +304,32 @@ class ProductViewSet(ModelViewSet):
         product.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+# ======================================/____ 8 ____/=====================================================
+
+# class ProductViewSet(ModelViewSet):
+#     serializer_class = ProductSerializer
+#     queryset = Product.objects.all()
+#     filter_backends = [SearchFilter, DjangoFilterBackend, OrderingFilter]
+#     filterset_class = ProductFilter
+#     search_fields = ['name']
+#     ordering_fields = ['name', 'price', 'inventory']
+#     # pagination_class = PageNumberPagination
+#     # pagination_class = DefaultPagination
+#
+#     # authentication_classes = [BasicAuthentication]
+#     # permission_classes = [IsAuthenticated]
+#
+#
+#     def get_serializer_context(self):
+#         return {'request': self.request}
+#
+#     def destroy(self, request, pk):
+#         product = get_object_or_404(Product.objects.select_related('category'), pk=pk)
+#         if product.order_items.count() > 0:
+#             return Response({
+#                 'error': 'There is some orderitem including this product . please remove them first.'},
+#                 status=status.HTTP_405_METHOD_NOT_ALLOWED)
+#
+#         product.delete()
+#         return Response(status=status.HTTP_204_NO_CONTENT)
