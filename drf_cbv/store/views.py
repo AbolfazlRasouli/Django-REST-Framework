@@ -14,7 +14,7 @@ from django.db.models import Count
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.viewsets import ModelViewSet
-# from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.authentication import BasicAuthentication
@@ -214,44 +214,16 @@ class CommentViewSet(ModelViewSet):
 
 # ======================================/____ 4 ____/=====================================================
 
-class ProductViewSet(ModelViewSet):
-    serializer_class = ProductSerializer
-    # queryset = Product.objects.select_related('category').all()
-
-    def get_queryset(self):
-        queryset = Product.objects.all()
-        category_id_parameter = self.request.query_params.get('category_id')
-        if category_id_parameter is not None:
-            queryset = queryset.filter(category_id=category_id_parameter)
-        return queryset
-
-    def get_serializer_context(self):
-        return {'request': self.request}
-
-    def destroy(self, request, pk):
-        product = get_object_or_404(Product.objects.select_related('category'), pk=pk)
-        if product.order_items.count() > 0:
-            return Response({
-                'error': 'There is some orderitem including this product . please remove them first.'},
-                status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-        product.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-# ======================================/____ 5 ____/=====================================================
-
 # class ProductViewSet(ModelViewSet):
 #     serializer_class = ProductSerializer
-#     queryset = Product.objects.all()
-#     filter_backends = [DjangoFilterBackend]
-#     filterset_fields = ['category_id', 'inventory']
+#     # queryset = Product.objects.select_related('category').all()
 #
-#     # def get_queryset(self):
-#     #     queryset = Product.objects.all()
-#     #     category_id_parameter = self.request.query_params.get('category_id')
-#     #     if category_id_parameter is not None:
-#     #         queryset = queryset.filter(category_id=category_id_parameter)
-#     #     return queryset
+#     def get_queryset(self):
+#         queryset = Product.objects.all()
+#         category_id_parameter = self.request.query_params.get('category_id')
+#         if category_id_parameter is not None:
+#             queryset = queryset.filter(category_id=category_id_parameter)
+#         return queryset
 #
 #     def get_serializer_context(self):
 #         return {'request': self.request}
@@ -265,4 +237,25 @@ class ProductViewSet(ModelViewSet):
 #
 #         product.delete()
 #         return Response(status=status.HTTP_204_NO_CONTENT)
+
+# ======================================/____ 5 ____/=====================================================
+
+class ProductViewSet(ModelViewSet):
+    serializer_class = ProductSerializer
+    queryset = Product.objects.all()
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['category_id', 'inventory']
+
+    def get_serializer_context(self):
+        return {'request': self.request}
+
+    def destroy(self, request, pk):
+        product = get_object_or_404(Product.objects.select_related('category'), pk=pk)
+        if product.order_items.count() > 0:
+            return Response({
+                'error': 'There is some orderitem including this product . please remove them first.'},
+                status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        product.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
