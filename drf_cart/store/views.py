@@ -12,7 +12,7 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.decorators import api_view
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
+from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin, DestroyModelMixin
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -81,6 +81,10 @@ class ProductViewSet(ModelViewSet):
 #     serializer_class = CartSerializer
 #     queryset = Cart.objects.all()
 
-class CartViewSet(CreateModelMixin, RetrieveModelMixin, GenericViewSet):
+# class CartViewSet(CreateModelMixin, RetrieveModelMixin, GenericViewSet):
+#     serializer_class = CartSerializer
+#     queryset = Cart.objects.prefetch_related('items').all()
+
+class CartViewSet(CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, GenericViewSet):
     serializer_class = CartSerializer
     queryset = Cart.objects.prefetch_related('items').all()
