@@ -1,8 +1,8 @@
 
 # from .pagination import DefaultPagination
 from .filters import ProductFilter
-from .models import Product, Category, Comment, Cart
-from .serializers import ProductSerializer, CategorySerializer, CommentSerializer, CartSerializer
+from .models import Product, Category, Comment, Cart, CartItem
+from .serializers import ProductSerializer, CategorySerializer, CommentSerializer, CartSerializer, CartItemSerializer
 from django.db.models import Count
 from django.http import HttpResponse, HttpRequest
 from django.shortcuts import render, get_object_or_404
@@ -88,3 +88,12 @@ class ProductViewSet(ModelViewSet):
 class CartViewSet(CreateModelMixin, RetrieveModelMixin, DestroyModelMixin, GenericViewSet):
     serializer_class = CartSerializer
     queryset = Cart.objects.prefetch_related('items').all()
+
+
+class CartItemViewSet(ModelViewSet):
+    serializer_class = CartItemSerializer
+    # queryset = CartItem.objects.all()
+
+    def get_queryset(self):
+        cart_pk = self.kwargs['cart_pk']
+        return CartItem.objects.select_related('product').filter(cart_id=cart_pk).all()
