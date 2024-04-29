@@ -13,15 +13,13 @@ DOLORS_TO_RIALS = 500000
 class CategorySerializer(serializers.ModelSerializer):
     # name_of_products = serializers.SerializerMethodField()
     name_of_products = serializers.IntegerField(source='products.count', read_only=True)
+
     class Meta:
         model = Category
         fields = ['id', 'title', 'description', 'name_of_products']
 
     def get_name_of_products(self, category):
         return category.products.count()
-
-
-
 
 
 # class ProductSerializer(serializers.Serializer):
@@ -54,9 +52,9 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-
     title = serializers.CharField(max_length=255, source='name')
     price = serializers.DecimalField(max_digits=6, decimal_places=2)
+
     # price_rials = serializers.SerializerMethodField()
     # unit_price_after_tax = serializers.SerializerMethodField(method_name='calculate_tax')
     # category = serializers.HyperlinkedRelatedField(
@@ -69,13 +67,11 @@ class ProductSerializer(serializers.ModelSerializer):
         # fields = ['id', 'title', 'price', 'inventory', 'price_rials', 'unit_price_after_tax', 'category']
         fields = ['id', 'title', 'price', 'category', 'description', 'inventory']
 
-
     # def get_price_rials(self, product):
     #     return int(product.price * DOLORS_TO_RIALS)
 
     # def calculate_tax(self, product):
     #     return round(product.price * Decimal(1.09), 2)
-
 
     def validate(self, data):
         print(data)
@@ -105,6 +101,7 @@ class CommentSerializer(serializers.ModelSerializer):
         product_id = self.context['product_pk']
         return Comment.objects.create(product_id=product_id, **validated_data)
 
+
 # =====================================/ cart serializer /==================================
 
 
@@ -116,18 +113,27 @@ class CartProductSerializer(serializers.ModelSerializer):
 
 class CartItemSerializer(serializers.ModelSerializer):
     product = CartProductSerializer()
-    class Meta :
+    item_total = serializers.SerializerMethodField()
+
+    class Meta:
         model = CartItem
-        fields = ['id', 'product', 'quantity']
+        fields = ['id', 'product', 'quantity', 'item_total']
+
+    def get_item_total(self, cart_item):
+        return cart_item.quantity * cart_item.product.price
 
 
 class CartSerializer(serializers.ModelSerializer):
     # id = serializers.UUIDField(read_only=True)
     items = CartItemSerializer(many=True, read_only=True)
+    total_price = serializers.SerializerMethodField()
+
     class Meta:
         model = Cart
         # fields = ['id', 'created_at']
-        fields = ['id', 'items']
+        fields = ['id', 'items', 'total_price']
         # read_only_fields = ['id', 'items']
-        read_only_fields = ['id',]
+        read_only_fields = ['id', ]
 
+    def get_total_price(self, cart):
+        return sum(item.quantity * item.product.price for item in cart.items.all())
