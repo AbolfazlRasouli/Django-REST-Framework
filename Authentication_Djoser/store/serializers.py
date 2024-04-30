@@ -1,6 +1,6 @@
 from decimal import Decimal
 from rest_framework import serializers
-from .models import Category, Product, Comment, Cart, CartItem
+from .models import Category, Product, Comment, Cart, CartItem, Customer
 from django.utils.text import slugify
 
 DOLORS_TO_RIALS = 500000
@@ -137,3 +137,10 @@ class CartSerializer(serializers.ModelSerializer):
 
     def get_total_price(self, cart):
         return sum(item.quantity * item.product.price for item in cart.items.all())
+
+
+class CustomerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Customer
+        fields = ['id', 'user', 'birth_day']
+        read_only_fields = ['user', ]
