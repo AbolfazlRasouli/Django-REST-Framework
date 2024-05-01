@@ -1,6 +1,6 @@
 from decimal import Decimal
 from rest_framework import serializers
-from .models import Category, Product, Comment, Cart, CartItem, Customer
+from .models import Category, Product, Comment, Cart, CartItem, Customer, Order, OrderItem
 from django.utils.text import slugify
 
 DOLORS_TO_RIALS = 500000
@@ -144,3 +144,39 @@ class CustomerSerializer(serializers.ModelSerializer):
         model = Customer
         fields = ['id', 'user', 'birth_day']
         read_only_fields = ['user', ]
+
+
+class OrderCustomerSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(max_length=255, source='user.first_name')
+    last_name = serializers.CharField(max_length=255, source='user.last_name')
+    email = serializers.EmailField(source='user.email')
+
+    class Meta:
+        model = Customer
+        fields = ['id', 'first_name', 'last_name', 'email']
+
+
+class OrderItemProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['id', 'name', 'price']
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    product = OrderItemProductSerializer()
+
+    class Meta:
+        model = OrderItem
+        fields = ['id', 'product', 'quantity', 'price']
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True)
+    # customer = CustomerSerializer()
+    customer = OrderCustomerSerializer()
+
+    class Meta:
+        model = Order
+        # fields = ['id', 'customer_id', 'status', 'datetime_created', 'items']
+        fields = ['id', 'customer', 'status', 'datetime_created', 'items']
+

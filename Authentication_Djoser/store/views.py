@@ -1,9 +1,9 @@
 # from .pagination import DefaultPagination
 from .filters import ProductFilter
-from .models import Product, Category, Comment, Cart, CartItem, Customer
+from .models import Product, Category, Comment, Cart, CartItem, Customer, OrderItem, Order
 from .permissions import IsAdminOrReadOnly
 from .serializers import ProductSerializer, CategorySerializer, CommentSerializer, CartSerializer, CartItemSerializer, \
-    CustomerSerializer
+    CustomerSerializer, OrderSerializer
 from django.db.models import Count
 from django.http import HttpResponse, HttpRequest
 from django.shortcuts import render, get_object_or_404
@@ -22,6 +22,7 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from django.db.models import Prefetch
 
 
 class CategoryViewSet(ModelViewSet):
@@ -111,9 +112,37 @@ class CustomerViewSet(ModelViewSet):
             return Response(serializer.data)
 
 
+class OrderViewSet(ModelViewSet):
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+    # queryset = Order.objects.all()
 
+    # def get_queryset(self):
+    #     # return Order.objects.prefetch_related('items').all()
+    #     # return Order.objects.prefetch_related(
+    #     #     Prefetch(
+    #     #         'items',
+    #     #         queryset=OrderItem.objects.select_related('product'),
+    #     #     )
+    #     # ).all()
+    #
+    #     return Order.objects.prefetch_related(
+    #         Prefetch(
+    #             'items',
+    #             queryset=OrderItem.objects.select_related('product'),
+    #         )
+    #     ).select_related('customer__user').all()
 
-
+    def get_queryset(self):
+        queryset = Order.objects.prefetch_related(
+                Prefetch(
+                    'items',
+                    queryset=OrderItem.objects.select_related('product'),
+                )
+            ).select_related('customer__user').all()
+        if self.request.user.is_staff:
+            return queryset
+        return queryset.filter(customer__user_id=self.request.user.id)
 
 
 
