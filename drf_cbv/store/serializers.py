@@ -96,7 +96,6 @@ class ProductSerializer(serializers.ModelSerializer):
     #     return instance
 
 
-
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
